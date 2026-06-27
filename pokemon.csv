@@ -1,4 +1,4 @@
 nome,tipos,peso_kg,altura_m,experiencia_base,habilidades,egg_group
-pikachu,electric,6.0,0.4,112
-charizard,"fire, flying",90.5,1.7,240
-mewtwo,psychic,122.0,2.0,306
+pikachu,electric,6.0,0.4,112,"static, lightning-rod","ground, fairy"
+charizard,"fire, flying",90.5,1.7,240,"blaze, solar-power","monster, dragon"
+mewtwo,psychic,122.0,2.0,306,"pressure, unnerve",no-eggs
