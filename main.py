@@ -1,5 +1,5 @@
-import requests
 import argparse
+import requests
 import pandas as pd
 
 BASE = "https://pokeapi.co/api/v2/"
@@ -54,13 +54,12 @@ def buscar_especies(session, dados):
     return resposta.json()
 
 def exibir_pokemon(dados, dados_especie):
-
     print()
     print(f"Nome:              {dados['name'].capitalize()}")
     print(f"Tipagem:           {', '.join(extrair_tipos(dados))}")
     print(f"Peso:              {dados['weight'] / 10} kg")
     print(f"Altura:            {dados['height'] / 10} m")
-    print(f"Experiência base:  {dados['base_experience']}")
+    print(f"Experiência base:  {dados['base_experience'] or 'N/A'}")
     print(f"Habilidade:        {', '.join(extrair_ability(dados))}")
     print(f"Egg Group:         {', '.join(extrair_egggroup(dados_especie))}")
 
@@ -70,14 +69,15 @@ def exportar_pokemon(session, nomes, arquivo="pokemon.csv"):
     for nome in nomes:
         try:
             dados = buscar_pokemon(session, nome)
+            dados_especie = buscar_especies(session, dados)
             registros.append({
                 "nome": dados["name"],
                 "tipos": ", ".join(extrair_tipos(dados)),
                 "peso_kg": dados["weight"] / 10,
                 "altura_m": dados["height"] / 10,
-                "experiencia_base": dados["base_experience"],
+                "experiencia_base": dados["base_experience"] or "N/A",
                 "habilidades": ', '.join(extrair_ability(dados)),
-                "egg_group": ', '.join(extrair_egggroup(dados))
+                "egg_group": ', '.join(extrair_egggroup(dados_especie))
             })
         except requests.exceptions.HTTPError:
             print(f"Pokémon '{nome}' não encontrado, pulando.")
@@ -87,7 +87,6 @@ def exportar_pokemon(session, nomes, arquivo="pokemon.csv"):
     print(f"{len(registros)} Pokémon exportados para {arquivo}")
 
 def main():
-
     parser = argparse.ArgumentParser(description="Pokédex CLI")
     subparsers = parser.add_subparsers(dest="comando")
 
@@ -115,9 +114,14 @@ def main():
                 print(f"Erro de conexão: {e}")
 
         elif args.comando == "comparar":
-            dados1 = buscar_pokemon(session, args.pokemon1)
-            dados2 = buscar_pokemon(session, args.pokemon2)
-            comparar_pokemon(dados1, dados2)
+            try:
+                dados1 = buscar_pokemon(session, args.pokemon1)
+                dados2 = buscar_pokemon(session, args.pokemon2)
+                comparar_pokemon(dados1, dados2)
+            except requests.exceptions.HTTPError as e:
+                print(f"Pokémon não encontrado: {e}")
+            except requests.exceptions.RequestException as e:
+                print(f"Erro de conexão: {e}")
 
         elif args.comando == "exportar":
             exportar_pokemon(session, args.nomes)
